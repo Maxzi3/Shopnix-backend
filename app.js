@@ -5,6 +5,7 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const hpp = require("hpp");
+const cookieParser = require("cookie-parser");
 
 const globalErrorHandler = require("./controllers/ErrorController");
 const AppError = require("./utils/appError");
@@ -16,7 +17,15 @@ const cartRouter = require("./routes/cartRoutes");
 const app = express();
 
 //GLOBAL  MIDDLEWARES
+app.use(cors());
 
+// incase i want to allow for a specific domain
+// app.use(
+//   cors({
+//     origin: "originpath",
+//   })
+// );
+app.options("*", cors());
 // Set Security HTTP Headers
 app.use(helmet());
 
@@ -37,6 +46,7 @@ app.use(express.json({ limit: "10kb" }));
 
 // Data Sanitization against NoSQL query Injection
 app.use(mongoSanitize());
+app.use(cookieParser());
 
 // Data Sanitization against XSS
 app.use(xss());
@@ -60,7 +70,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
 app.use("/api/v1/cart", cartRouter);
 
-app.all("*", (req, ) => {
+app.all("*", (req) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
 app.use(globalErrorHandler);

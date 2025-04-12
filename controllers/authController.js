@@ -61,6 +61,14 @@ const login = catchAsyncError(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+const logout = (req, res) => {
+  res.cookie("jwt", "loggedout", {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpsOnly: true,
+  });
+  res.status(200).json({ status: "success" });
+};
+
 const protect = catchAsyncError(async (req, res, next) => {
   // 1) Getting Token and check if its there
   let token;
@@ -69,11 +77,13 @@ const protect = catchAsyncError(async (req, res, next) => {
     req.headers.authorization.startsWith("Bearer")
   ) {
     token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
-  if (!token)
-    return next(
-      new AppError("You are not Logged in! Please Log in to get access", 401)
-    );
+    if (!token)
+      return next(
+        new AppError("You are not Logged in! Please Log in to get access", 401)
+      );
 
   // 2) Verfication of Token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
@@ -192,6 +202,7 @@ const updatePassword = catchAsyncError(async (req, res, next) => {
 module.exports = {
   signUp,
   login,
+  logout,
   protect,
   restrictTo,
   resetPassword,
