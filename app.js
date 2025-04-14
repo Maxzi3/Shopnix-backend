@@ -20,17 +20,8 @@ const app = express();
 //GLOBAL  MIDDLEWARES
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
-
-// Handle preflight requests (OPTIONS)
-app.options(
-  "*",
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
+    origin: "http://localhost:5173", // or whatever your frontend is
+    credentials: true, // <--- MUST BE TRUE to allow cookies
   })
 );
 

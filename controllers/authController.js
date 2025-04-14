@@ -18,15 +18,10 @@ const createSendToken = (user, statusCode, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // 'Lax' for localhost
-        domain: process.env.NODE_ENV === "production" ? ".yourdomain.com" : "localhost", 
-
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    secure: process.env.NODE_ENV === "production",
   };
-  if (process.env.NODE_ENV === "development") cookieOptions.secure = false;
-  if (process.env.NODE_ENV === "production") {
-    cookieOptions.secure = true;
-    cookieOptions.sameSite = "none";
-  }
+
   res.cookie("jwt", token, cookieOptions);
   user.password = undefined;
 
@@ -36,6 +31,7 @@ const createSendToken = (user, statusCode, res) => {
     data: user,
   });
 };
+
 
 const signUp = catchAsyncError(async (req, res, next) => {
   const newUser = await User.create({
@@ -75,11 +71,6 @@ const logout = (req, res) => {
 };
 
 const protect = catchAsyncError(async (req, res, next) => {
-  console.log("req.cookies:", req.cookies); // Log entire cookies object
-  console.log("req.cookies.jwt:", req.cookies?.jwt); // Log jwt cookie
-  console.log("req.headers.cookie:", req.headers.cookie); // Raw cookie header
-  console.log("Authorization:", req.headers.authorization); // Check header
-  // 1) Getting Token and check if its there
   let token;
   if (
     req.headers.authorization &&

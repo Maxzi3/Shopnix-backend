@@ -16,6 +16,7 @@ exports.getCart = catchAsyncError(async (req, res, next) => {
 // Add to Cart
 exports.addToCart = catchAsyncError(async (req, res, next) => {
   const { productId, quantity } = req.body;
+  console.log("Received productId:", productId); 
   const product = await Product.findById(productId);
   if (!product) return next(new AppError("Product not found", 404));
 
