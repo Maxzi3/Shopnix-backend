@@ -6,6 +6,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const hpp = require("hpp");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 
 const globalErrorHandler = require("./controllers/ErrorController");
 const AppError = require("./utils/appError");
@@ -17,15 +18,22 @@ const cartRouter = require("./routes/cartRoutes");
 const app = express();
 
 //GLOBAL  MIDDLEWARES
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 
-// incase i want to allow for a specific domain
-// app.use(
-//   cors({
-//     origin: "originpath",
-//   })
-// );
-app.options("*", cors());
+// Handle preflight requests (OPTIONS)
+app.options(
+  "*",
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 // Set Security HTTP Headers
 app.use(helmet());
 
@@ -70,7 +78,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
 app.use("/api/v1/cart", cartRouter);
 
-app.all("*", (req) => {
+app.all("*", (req, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
 app.use(globalErrorHandler);

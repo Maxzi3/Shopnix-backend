@@ -18,10 +18,15 @@ const createSendToken = (user, statusCode, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-  };
-  if (process.env.NODE_ENV === "development") cookieOptions.secure = false; // For development, allow cookies to be accessed over HTTP
-  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // 'Lax' for localhost
+        domain: process.env.NODE_ENV === "production" ? ".yourdomain.com" : "localhost", 
 
+  };
+  if (process.env.NODE_ENV === "development") cookieOptions.secure = false;
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.secure = true;
+    cookieOptions.sameSite = "none";
+  }
   res.cookie("jwt", token, cookieOptions);
   user.password = undefined;
 
@@ -70,6 +75,10 @@ const logout = (req, res) => {
 };
 
 const protect = catchAsyncError(async (req, res, next) => {
+  console.log("req.cookies:", req.cookies); // Log entire cookies object
+  console.log("req.cookies.jwt:", req.cookies?.jwt); // Log jwt cookie
+  console.log("req.headers.cookie:", req.headers.cookie); // Raw cookie header
+  console.log("Authorization:", req.headers.authorization); // Check header
   // 1) Getting Token and check if its there
   let token;
   if (
@@ -80,10 +89,10 @@ const protect = catchAsyncError(async (req, res, next) => {
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
-    if (!token)
-      return next(
-        new AppError("You are not Logged in! Please Log in to get access", 401)
-      );
+  if (!token)
+    return next(
+      new AppError("You are not Logged in! Please Log in to get access", 401)
+    );
 
   // 2) Verfication of Token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
