@@ -15,6 +15,13 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, "Please enter a valid email"],
   },
+  phoneNumber: {
+    type: String,
+    required: [true, "Please provide your phone number"],
+  },
+  address: {
+    type: String,
+  },
   photo: {
     type: String,
   },
@@ -22,6 +29,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["user", "admin"],
     default: "user",
+  },
+  emailVerified: {
+    type: String,
+    enum: ["pending", "verified"],
+    default: "pending",
   },
   password: {
     type: String,
@@ -33,7 +45,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please confirm your password"],
     validate: {
-      // This Only works on Create and Save
+      // This only works on Create and Save
       validator: function (el) {
         return el === this.password;
       },
@@ -43,15 +55,14 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: {
     type: Date,
   },
-  passwordResetToken: String,
-  passwordResetExpiresAt: Date,
+  passwordResetToken: { String, select: false },
+  passwordResetExpiresAt: { Date, select: false },
   active: {
     type: Boolean,
     default: true,
     select: false,
   },
 });
-
 userSchema.pre("save", async function (next) {
   // Only run this function if password was modified
   if (!this.isModified("password")) return next();

@@ -35,9 +35,11 @@ const createSendToken = (user, statusCode, res) => {
 
 const signUp = catchAsyncError(async (req, res, next) => {
   const newUser = await User.create({
-    name: req.body.name,
+    fullName: req.body.fullName,
     email: req.body.email,
     password: req.body.password,
+    phoneNumber: req.body.phoneNumber,
+    address: req.body.address,
     passwordConfirm: req.body.passwordConfirm,
     role: req.body.role || "user", // default role is user
   });

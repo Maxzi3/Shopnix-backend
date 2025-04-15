@@ -9,7 +9,11 @@ exports.getCart = catchAsyncError(async (req, res, next) => {
     "items.product",
     "name price priceDiscount image"
   );
-  if (!cart) return next(new AppError("Cart is empty", 404));
+
+  if (!cart) {
+    return res.json({ status: "success", data: { cart: { items: [] } } });
+  }
+
   res.json({ status: "success", data: { cart } });
 });
 

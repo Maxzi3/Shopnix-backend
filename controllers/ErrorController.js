@@ -1,25 +1,29 @@
 const AppError = require("../utils/appError");
 
 const handleCastErrorDB = (err) => {
-  const message = `Invalid ${err.path}: ${err.value}.`;
+  const message = `Sorry, we couldn’t find anything with ${err.path} set to "${err.value}". Please check and try again.`;
   return new AppError(message, 400);
 };
 
 const handleDuplicateFieldError = (err) => {
-  const field = Object.keys(err.keyValue)[0]; // Extracts the duplicate field name
-  const message = `Duplicate field value: ${err.keyValue[field]}. Please use another value!`;
+  const field = Object.keys(err.keyValue)[0];
+  const value = err.keyValue[field];
+  const message = `Oops — the ${field} "${value}" is already taken. Please use a different one.`;
   return new AppError(message, 400);
 };
+
 const handleValidationError = (err) => {
   const errors = Object.values(err.errors).map((val) => val.message);
-  const message = `Invalid input data. ${errors.join(". ")}`;
+  const message = `Please check your input: ${errors.join(". ")}`;
   return new AppError(message, 400);
 };
 
 const handleJWTError = (err) =>
-  new AppError("Invalid token, Please Log in again", 401);
+  new AppError("Invalid token. Please log in again to continue.", 401);
+
 const handleJWTExpiredError = (err) =>
-  new AppError("Your Token has expired Please Login Again", 401);
+  new AppError("Your session has expired. Please log in again.", 401);
+
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
