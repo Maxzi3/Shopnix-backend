@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema(
     address: {
       type: String,
     },
-    photo: {
+    avatar: {
       type: String,
     },
     role: {
@@ -65,7 +65,7 @@ const userSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // 
+    timestamps: true, //
   }
 );
 userSchema.pre("save", async function (next) {

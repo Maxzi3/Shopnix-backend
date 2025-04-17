@@ -26,7 +26,14 @@ const updateMe = catchAsyncError(async (req, res, next) => {
     );
   }
   // 2) Filter unwanted fields that shouldn't be updated
-  const filteredBody = filterObj(req.body, "name", "email");
+  const filteredBody = filterObj(
+    req.body,
+    "fullName",
+    "email",
+    "address",
+    "phoneNumber",
+    "avatar"
+  );
   // 3) Update the user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true, // Return updated user
