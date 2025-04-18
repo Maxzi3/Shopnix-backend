@@ -44,3 +44,4 @@ if (process.argv[2] === "--import") {
 } else {
   console.log("Please provide a command --import or --destroy");
 }
+// $ node dev-data/import-dev-data.js 
