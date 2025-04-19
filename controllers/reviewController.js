@@ -11,7 +11,7 @@ const setProductUserIds = (req, res, next) => {
 const createReview = factory.createOne(Review);
 const deleteReview = factory.deleteOne(Review);
 const updateReview = factory.updateOne(Review);
-const getReview = factory.getOne(Review);
+const getReview = factory.getOne(Review, { path: "user", select: "fullName" });
 const getAllReviews = factory.getAll(Review);
 
 module.exports = {

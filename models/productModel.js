@@ -17,7 +17,7 @@ const productSchema = new mongoose.Schema(
       },
       default: 0,
     },
-    category: { type: String, required: true },
+    category: { type: String, required: true, set: (val) => val.toLowerCase() },
     stockNo: { type: Number, required: true, default: 0 },
     imageUrl: { type: String, required: true },
     slug: String,
@@ -60,7 +60,6 @@ productSchema.pre("save", async function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
-
 
 productSchema.post(/^find/, async function (doc, next) {
   console.log(`Query took ${Date.now() - this.start} milliseconds`);
