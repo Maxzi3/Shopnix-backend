@@ -27,7 +27,7 @@ const getProductByIdOrSlug = catchAsyncError(async (req, res, next) => {
 
   if (!product) return next(new AppError("Product not found", 404));
 
-  console.log(product.reviews); // Now you should see populated user with fullName
+  
 
   res.status(200).json({
     status: "success",
