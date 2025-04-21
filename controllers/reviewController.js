@@ -13,7 +13,7 @@ const getUserReview = catchAsyncError(async (req, res, next) => {
   const features = new APIFeatures(
     Review.find({ user: req.user.id })
       .populate("product", "name") // populate only the product's name
-      .select("review rating product"), // only pick these fields from Review,
+      .select("review rating product createdAt"), // only pick these fields from Review,
     req.query
   )
     .filter()

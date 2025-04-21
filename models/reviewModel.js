@@ -27,6 +27,9 @@ const reviewSchema = new mongoose.Schema(
     },
   },
   {
+    timestamps: true, //
+  },
+  {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
@@ -44,25 +47,28 @@ reviewSchema.pre(/^find/, function (next) {
 
 reviewSchema.statics.calcAverageRatings = async function (productId) {
   const stats = await this.aggregate([
-    {
-      $match: {
-        product: productId,
-      },
-    },
+    { $match: { product: productId } },
     {
       $group: {
         _id: "$product",
-        nRating: {
-          $sum: 1,
-        },
+        nRating: { $sum: 1 },
         avgRating: { $avg: "$rating" },
       },
     },
   ]);
-  await Product.findByIdAndUpdate(productId, {
-    ratingsAverage: stats[0].avgRating,
-    ratingsQuantity: stats[0].nRating,
-  });
+
+  if (stats.length > 0) {
+    await Product.findByIdAndUpdate(productId, {
+      ratingsAverage: stats[0].avgRating,
+      ratingsQuantity: stats[0].nRating,
+    });
+  } else {
+    // If no reviews left, reset to default values
+    await Product.findByIdAndUpdate(productId, {
+      ratingsAverage: 1, // or any default
+      ratingsQuantity: 0,
+    });
+  }
 };
 
 reviewSchema.post("save", function () {
