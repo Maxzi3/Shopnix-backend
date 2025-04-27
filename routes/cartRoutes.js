@@ -5,13 +5,17 @@ const {
   updateCartItem,
   removeCartItem,
   clearCart,
+  mergeGuestCart,
 } = require("../controllers/cartControllers");
 const { setProductUserIds } = require("../controllers/reviewController");
 const { protect, restrictTo } = require("../controllers/authController");
 
 const router = express.Router();
 
+
 router.use(protect);
+
+router.post("/merge", mergeGuestCart);
 
 router
   .route("/")
