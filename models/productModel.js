@@ -5,6 +5,10 @@ const slugify = require("slugify");
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    imageCover: {
+      type: String,
+      required: [true, "A Product must have a cover image"],
+    },
     description: { type: String, required: true },
     price: { type: Number, required: true },
     priceDiscount: {

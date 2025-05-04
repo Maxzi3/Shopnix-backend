@@ -7,7 +7,7 @@ const catchAsyncError = require("../utils/catchAsyncError");
 const getCart = catchAsyncError(async (req, res, next) => {
   const cart = await Cart.findOne({ user: req.user.id }).populate(
     "items.product",
-    "name price priceDiscount image"
+    "name price priceDiscount imageUrl"
   );
 
   if (!cart) {
