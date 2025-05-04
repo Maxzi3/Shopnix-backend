@@ -58,10 +58,10 @@ app.use(
 );
 
 // Test Middleware
-app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
-  next();
-});
+// app.use((req, res, next) => {
+//   req.requestTime = new Date().toISOString();
+//   next();
+// });
 
 // Using Express router
 app.use("/api/v1/products", productRouter);

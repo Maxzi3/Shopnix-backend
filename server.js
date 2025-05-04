@@ -1,10 +1,13 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+
+// Handle uncaught exceptions (e.g., syntax errors)
 process.on("uncaughtException", (error) => {
   console.log("UNCAUGHT EXCEPTION! Shutting down...");
   console.error(error.name, error.message);
   process.exit(1);
 });
+
 dotenv.config({ path: "./config.env" });
 
 const app = require("./app");
@@ -15,11 +18,18 @@ mongoose
   .then(() => console.log("Connected to MongoDB"));
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server is running on port ${port}...`));
 
+// ✅ Save the server instance here
+const server = app.listen(port, () =>
+  console.log(`Server is running on port ${port}...`)
+);
+
+// Handle unhandled promise rejections (e.g., DB errors)
 process.on("unhandledRejection", (error) => {
   console.log("UNHANDLED REJECTION! Shutting down...");
   console.error(error.name, error.message);
+
+  // ✅ Now this works because server is defined
   server.close(() => {
     process.exit(1);
   });

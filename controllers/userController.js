@@ -1,7 +1,13 @@
+const multer = require("multer");
+const { resizeImage, uploadToCloudinary } = require("../cloudinary");
 const User = require("./../models/userModel");
 const catchAsyncError = require("./../utils/catchAsyncError");
 const AppError = require("./../utils/appError");
 const factory = require("./handlerFactory");
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+const uploadUserPhoto = upload.single("avatar");
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -34,6 +40,17 @@ const updateMe = catchAsyncError(async (req, res, next) => {
     "phoneNumber",
     "avatar"
   );
+
+ if (req.file) {
+   const resizedBuffer = await resizeImage(req.file.buffer);
+   const uploadResult = await uploadToCloudinary(
+     resizedBuffer,
+     `user-${req.user.id}-${Date.now()}`
+   );
+
+   filteredBody.avatar = uploadResult.secure_url; // <<-- Push to filteredBody
+ }
+
   // 3) Update the user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true, // Return updated user
@@ -75,4 +92,5 @@ module.exports = {
   updateMe,
   deleteMe,
   getMe,
+  uploadUserPhoto,
 };
