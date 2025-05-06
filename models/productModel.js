@@ -5,10 +5,6 @@ const slugify = require("slugify");
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    imageCover: {
-      type: String,
-      required: [true, "A Product must have a cover image"],
-    },
     description: { type: String, required: true },
     price: { type: Number, required: true },
     priceDiscount: {
@@ -23,7 +19,11 @@ const productSchema = new mongoose.Schema(
     },
     category: { type: String, required: true, set: (val) => val.toLowerCase() },
     stockNo: { type: Number, required: true, default: 0 },
-    imageUrl: { type: String, required: true },
+    imageUrl: {
+      type: String,
+      required: [true, "A Product must have a cover image"],
+    },
+    images: [{ type: String }],
     slug: String,
     ratingsAverage: {
       type: Number,
@@ -65,7 +65,12 @@ productSchema.pre("save", async function (next) {
   next();
 });
 
-productSchema.post(/^find/, async function (doc, next) {
+productSchema.pre(/^find/, function (next) {
+  this.start = Date.now();
+  next();
+});
+
+productSchema.post(/^find/, function (doc, next) {
   console.log(`Query took ${Date.now() - this.start} milliseconds`);
   next();
 });

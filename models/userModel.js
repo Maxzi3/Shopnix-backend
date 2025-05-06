@@ -25,7 +25,8 @@ const userSchema = new mongoose.Schema(
     },
     avatar: {
       type: String,
-      default: "default.jpg",
+      default:
+        "https://res.cloudinary.com/dqmuagiln/image/upload/v1746451240/default_fxyc5v.jpg",
     },
     role: {
       type: String,
@@ -37,6 +38,8 @@ const userSchema = new mongoose.Schema(
       enum: ["pending", "verified"],
       default: "pending",
     },
+    emailVerificationToken: String,
+    emailVerificationTokenExpires: Date,
     password: {
       type: String,
       required: [true, "Please provide a password"],
@@ -69,6 +72,8 @@ const userSchema = new mongoose.Schema(
     timestamps: true, //
   }
 );
+
+
 userSchema.pre("save", async function (next) {
   // Only run this function if password was modified
   if (!this.isModified("password")) return next();
@@ -111,6 +116,18 @@ userSchema.methods.changePasswordAfter = function (JWTTimestamp) {
   return false; // False means password wasn't changed
 };
 
+// Instance method: Create email verification token
+userSchema.methods.createEmailVerificationToken = function () {
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  this.emailVerificationToken = crypto
+    .createHash("sha256")
+    .update(verificationToken)
+    .digest("hex");
+  this.emailVerificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+  return verificationToken;
+};
+
+// Instance method: Create password reset token
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
 

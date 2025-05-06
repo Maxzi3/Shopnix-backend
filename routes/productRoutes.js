@@ -5,7 +5,7 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
-  getProductBySlug,
+  uploadProductImages,
 } = require("../controllers/productController");
 const { protect, restrictTo } = require("../controllers/authController");
 const reviewRouter = require("./../routes/reviewRoutes");
@@ -18,13 +18,13 @@ router.use("/:productId/reviews", reviewRouter);
 router
   .route("/")
   .get(getAllProducts)
-  .post(protect, restrictTo("admin"), createProduct);
+  .post(protect, restrictTo("admin"), uploadProductImages, createProduct);
 
   
 router
   .route("/:id")
   .get(getProductByIdOrSlug)
-  .patch(protect, restrictTo("admin"), updateProduct)
+  .patch(protect, restrictTo("admin"),  uploadProductImages, updateProduct)
   .delete(protect, restrictTo("admin"), deleteProduct);
   
 

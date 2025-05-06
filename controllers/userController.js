@@ -45,7 +45,8 @@ const updateMe = catchAsyncError(async (req, res, next) => {
    const resizedBuffer = await resizeImage(req.file.buffer);
    const uploadResult = await uploadToCloudinary(
      resizedBuffer,
-     `user-${req.user.id}-${Date.now()}`
+     `user-${req.user.id}-${Date.now()}`,
+     "users"
    );
 
    filteredBody.avatar = uploadResult.secure_url; // <<-- Push to filteredBody

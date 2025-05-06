@@ -20,7 +20,6 @@ const getCart = catchAsyncError(async (req, res, next) => {
 // Add to Cart
 const addToCart = catchAsyncError(async (req, res, next) => {
   const { productId, quantity } = req.body;
-  console.log("Received productId:", productId);
   const product = await Product.findById(productId);
   if (!product) return next(new AppError("Product not found", 404));
 
@@ -82,8 +81,6 @@ const clearCart = catchAsyncError(async (req, res, next) => {
 
 const mergeGuestCart = async (req, res, next) => {
   try {
-    console.log("mergeGuestCart started...");
-
     // 1. Check if user is authenticated
     if (!req.user) {
       return next(new AppError("User not authenticated", 401));
@@ -91,9 +88,6 @@ const mergeGuestCart = async (req, res, next) => {
 
     const userId = req.user.id;
     const guestItems = req.body.guestItems || [];
-
-    console.log("Authenticated User ID:", userId);
-    console.log("Guest Cart Items Received:", guestItems);
 
     // 2. Find the user's existing cart (if any)
     let userCart = await Cart.findOne({ user: userId });
@@ -130,7 +124,7 @@ const mergeGuestCart = async (req, res, next) => {
 
     // 4. Save the updated cart
     await userCart.save();
-    console.log("Updated cart:", userCart);
+    
 
     // 5. Return the updated cart
     const updatedCart = await Cart.findOne({ user: userId }).populate(

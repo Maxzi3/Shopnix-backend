@@ -20,7 +20,7 @@ const app = express();
 //GLOBAL  MIDDLEWARES
 app.use(
   cors({
-    origin: "http://localhost:5173", // or whatever your frontend is
+    origin: process.env.FRONTEND_URL, // or whatever your frontend is
     credentials: true, // <--- MUST BE TRUE to allow cookies
   })
 );

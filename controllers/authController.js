@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const catchAsyncError = require("../utils/catchAsyncError");
 const AppError = require("../utils/appError");
-const sendEmail = require("../utils/email");
+const Email = require("../utils/email");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -43,6 +43,17 @@ const signUp = catchAsyncError(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
     role: req.body.role || "user", // default role is user
   });
+
+  // Send welcome email
+  const welcomeUrl = `${process.env.FRONTEND_URL}`;
+  await new Email(newUser, welcomeUrl).sendWelcome();
+
+  // Send verification email
+  const verificationToken = newUser.createEmailVerificationToken();
+  await newUser.save({ validateBeforeSave: false });
+  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+  await new Email(newUser, verificationUrl).sendEmailVerification();
+
   createSendToken(newUser, 201, res);
 });
 
@@ -59,6 +70,14 @@ const login = catchAsyncError(async (req, res, next) => {
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError("Incorrect email or password", 401));
   }
+
+  // Send verification email if not verified
+  // if (user.emailVerified === "pending") {
+  //   const verificationToken = user.createEmailVerificationToken();
+  //   await user.save({ validateBeforeSave: false });
+  //   const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+  //   await new Email(user, verificationUrl).sendEmailVerification();
+  // }
 
   // 3)if everything is okay, generate a token and send to client
   createSendToken(user, 200, res);
@@ -131,30 +150,24 @@ const forgotPassword = catchAsyncError(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // 3) Create reset URL
-  const resetUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/users/resetPassword/${resetToken}`;
-  const message = `Forgot your password? Reset it here: ${resetUrl}.\n\nIf you didn't request a password reset, please ignore this email.`;
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
   try {
-    // 4) Send email with token
-    await sendEmail({
-      to: user.email,
-      subject: "Password Reset Request (Valid for 10 minutes)",
-      message,
-    });
-
+    await new Email(user, resetUrl).sendPasswordReset();
     res.status(200).json({
       status: "success",
-      message: "Token sent to your email",
+      message: "Password reset link sent to email",
     });
   } catch (err) {
-    // Handle email sending failure
     user.passwordResetToken = undefined;
-    user.passwordResetExpiresAt = undefined;
+    user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
-
-    return next(new AppError("Email sending failed", 500));
+    return next(
+      new AppError(
+        "There was an error sending the email. Try again later!",
+        500
+      )
+    );
   }
 });
 
@@ -201,6 +214,33 @@ const updatePassword = catchAsyncError(async (req, res, next) => {
   // 4  log user in , send jwt
   createSendToken(user, 200, res);
 });
+
+const verifyEmail = catchAsyncError(async (req, res, next) => {
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    emailVerificationToken: hashedToken,
+    emailVerificationTokenExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(new AppError("Token is invalid or has expired", 400));
+  }
+
+  user.emailVerified = "verified";
+  user.emailVerificationToken = undefined;
+  user.emailVerificationTokenExpires = undefined;
+  await user.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    status: "success",
+    message: "Email verified successfully",
+  });
+});
+
 module.exports = {
   signUp,
   login,
@@ -210,4 +250,5 @@ module.exports = {
   resetPassword,
   forgotPassword,
   updatePassword,
+  verifyEmail,
 };
