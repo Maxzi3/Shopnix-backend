@@ -7,7 +7,7 @@ const {
   deleteProduct,
   uploadProductImages,
 } = require("../controllers/productController");
-const { protect, restrictTo } = require("../controllers/authController");
+const { protect, restrictTo } = require("../middlewares/authMiddleware");
 const reviewRouter = require("./../routes/reviewRoutes");
 
 // Product routes

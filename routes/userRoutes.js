@@ -18,9 +18,8 @@ const {
   resetPassword,
   updatePassword,
   verifyEmail,
-  protect,
-  restrictTo,
 } = require("../controllers/authController");
+const { protect, restrictTo } = require("../middlewares/authMiddleware");
 
 //  User routes
 const router = express.Router();
@@ -37,7 +36,7 @@ router.use(protect);
 
 router.patch("/updateMyPassword", updatePassword);
 router.get("/me", getMe, getUser);
-router.patch("/updateMe", uploadUserPhoto,  updateMe);
+router.patch("/updateMe", uploadUserPhoto, updateMe);
 router.delete("/deleteMe", deleteMe);
 
 router.use(restrictTo("admin"));
