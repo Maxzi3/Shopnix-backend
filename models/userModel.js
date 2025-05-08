@@ -7,7 +7,14 @@ const userSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      required: [true, "Please tell us your fullName!"],
+      required: [true, "Please provide your full name"],
+      trim: true,
+      validate: {
+        validator: function (value) {
+          return value.split(" ").filter((word) => word).length >= 2;
+        },
+        message: "Please provide at least a first and last name",
+      },
     },
     email: {
       type: String,
