@@ -33,13 +33,14 @@ app.use(helmet());
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+
 // LIMIT REQUEST FROM API
-// const limter = rateLimit({
-//   max: 100,
-//   windowMs: 60 * 60 * 1000,
-//   message: "Too many Request from this IP, Please Try again in an hour",
-// });
-// app.use("/api", limter);
+const limter = rateLimit({
+  max: 200,
+  windowMs: 60 * 60 * 1000,
+  message: "Too many Request from this IP, Please Try again in an hour",
+});
+app.use("/api", limter);
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: "10kb" }));
@@ -58,11 +59,6 @@ app.use(
   })
 );
 
-// Test Middleware
-// app.use((req, res, next) => {
-//   req.requestTime = new Date().toISOString();
-//   next();
-// });
 
 // Using Express router
 app.use("/api/v1/products", productRouter);
