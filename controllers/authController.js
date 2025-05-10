@@ -31,7 +31,6 @@ const createSendToken = (user, statusCode, res) => {
   });
 };
 
-
 const signUp = catchAsyncError(async (req, res, next) => {
   const newUser = await User.create({
     fullName: req.body.fullName,
@@ -40,45 +39,41 @@ const signUp = catchAsyncError(async (req, res, next) => {
     phoneNumber: req.body.phoneNumber,
     address: req.body.address,
     passwordConfirm: req.body.passwordConfirm,
-    role: req.body.role || "user", // default role is user
+    role: req.body.role || "user",
   });
 
-  // Send welcome email
-  const welcomeUrl = `${process.env.FRONTEND_URL}`;
-  await new Email(newUser, welcomeUrl).sendWelcome();
-
-  // Send verification email
   const verificationToken = newUser.createEmailVerificationToken();
   await newUser.save({ validateBeforeSave: false });
+
   const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
   await new Email(newUser, verificationUrl).sendEmailVerification();
 
-  createSendToken(newUser, 201, res);
+  res.status(201).json({
+    status: "success",
+    message: "User registered. Please verify your email to complete signup.",
+  });
 });
 
 const login = catchAsyncError(async (req, res, next) => {
   const { email, password } = req.body;
 
-  // 1) Check if email and password exist
   if (!email || !password) {
     return next(new AppError("Please provide email and password", 400));
   }
 
-  // 2) Check if user exists and password is correct
   const user = await User.findOne({ email }).select("+password");
+
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError("Incorrect email or password", 401));
   }
 
-  // Send verification email if not verified
-  // if (user.emailVerified === "pending") {
-  //   const verificationToken = user.createEmailVerificationToken();
-  //   await user.save({ validateBeforeSave: false });
-  //   const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-  //   await new Email(user, verificationUrl).sendEmailVerification();
-  // }
+  // Block login if email not verified
+  if (user.emailVerified === "pending") {
+    return next(
+      new AppError("Please verify your email before logging in.", 401)
+    );
+  }
 
-  // 3)if everything is okay, generate a token and send to client
   createSendToken(user, 200, res);
 });
 
@@ -181,15 +176,41 @@ const verifyEmail = catchAsyncError(async (req, res, next) => {
   if (!user) {
     return next(new AppError("Token is invalid or has expired", 400));
   }
+  if (user.emailVerified === "verified")
+    return next(new AppError("Email already verified", 400));
 
   user.emailVerified = "verified";
   user.emailVerificationToken = undefined;
   user.emailVerificationTokenExpires = undefined;
+
+  // Send welcome email
+  if (!user.welcomeEmailSent) {
+    const welcomeUrl = `${process.env.FRONTEND_URL}`;
+    await new Email(user, welcomeUrl).sendWelcome();
+    user.welcomeEmailSent = true;
+  }
+  
   await user.save({ validateBeforeSave: false });
+
+  // Auto Login
+  createSendToken(user, 200, res);
+});
+
+const resendEmailVerification = catchAsyncError(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) return next(new AppError("User not found", 404));
+  if (user.emailVerified === "verified")
+    return next(new AppError("Email already verified", 400));
+
+  const verificationToken = user.createEmailVerificationToken();
+  await user.save({ validateBeforeSave: false });
+
+  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+  await new Email(user, verificationUrl).sendEmailVerification();
 
   res.status(200).json({
     status: "success",
-    message: "Email verified successfully",
+    message: "Verification email resent",
   });
 });
 
@@ -201,4 +222,5 @@ module.exports = {
   forgotPassword,
   updatePassword,
   verifyEmail,
+  resendEmailVerification,
 };

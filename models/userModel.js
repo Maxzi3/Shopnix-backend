@@ -45,6 +45,10 @@ const userSchema = new mongoose.Schema(
       enum: ["pending", "verified"],
       default: "pending",
     },
+    welcomeEmailSent: {
+      type: Boolean,
+      default: false
+      },
     emailVerificationToken: String,
     emailVerificationTokenExpires: Date,
     password: {

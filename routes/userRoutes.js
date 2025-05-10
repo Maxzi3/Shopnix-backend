@@ -18,6 +18,7 @@ const {
   resetPassword,
   updatePassword,
   verifyEmail,
+  resendEmailVerification,
 } = require("../controllers/authController");
 const { protect, restrictTo } = require("../middlewares/authMiddleware");
 
@@ -29,6 +30,7 @@ router.post("/login", login);
 router.get("/logout", logout);
 router.post("/forgotPassword", forgotPassword);
 router.post("/verifyEmail/:token", verifyEmail);
+router.post("/resend-verification", resendEmailVerification);
 router.patch("/resetPassword/:token", resetPassword);
 
 // Protect all Route After this Middleware

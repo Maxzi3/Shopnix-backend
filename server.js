@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { MongoClient } = require("mongodb");
 const dotenv = require("dotenv");
 
 // Handle uncaught exceptions (e.g., syntax errors)
@@ -13,9 +14,20 @@ dotenv.config({ path: "./config.env" });
 const app = require("./app");
 
 // Connect to MongoDB
+// mongoose
+//   .connect(process.env.DATABASE_LOCAL)
+//   .then(() => console.log("Connected to MongoDB"));
+
+const mongoURI = process.env.DATABASE_URI;
+
 mongoose
-  .connect(process.env.DATABASE_LOCAL)
-  .then(() => console.log("Connected to MongoDB"));
+  .connect(mongoURI)
+  .then(() => {
+    console.log("MongoDB connected successfully");
+  })
+  .catch((err) => {
+    console.error("Error connecting to MongoDB", err);
+  });
 
 const port = process.env.PORT || 3000;
 
