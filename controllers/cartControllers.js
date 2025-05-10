@@ -7,7 +7,7 @@ const catchAsyncError = require("../utils/catchAsyncError");
 const getCart = catchAsyncError(async (req, res, next) => {
   const cart = await Cart.findOne({ user: req.user.id }).populate(
     "items.product",
-    "name price priceDiscount imageUrl"
+    "name price priceDiscount imageUrl category"
   );
 
   if (!cart) {
@@ -124,7 +124,6 @@ const mergeGuestCart = async (req, res, next) => {
 
     // 4. Save the updated cart
     await userCart.save();
-    
 
     // 5. Return the updated cart
     const updatedCart = await Cart.findOne({ user: userId }).populate(
@@ -142,7 +141,30 @@ const mergeGuestCart = async (req, res, next) => {
     next(error);
   }
 };
+const updateCartItemSize = async (req, res) => {
+  const { cartItemId } = req.params;
+  const { size } = req.body;
 
+  if (!size) {
+    return res.status(400).json({ message: "Size is required" });
+  }
+
+  const cart = await Cart.findOne({ user: req.user._id });
+
+  if (!cart) {
+    return res.status(404).json({ message: "Cart not found" });
+  }
+
+  const item = cart.items.id(cartItemId);
+  if (!item) {
+    return res.status(404).json({ message: "Cart item not found" });
+  }
+
+  item.size = size;
+  await cart.save();
+
+  res.status(200).json({ message: "Size updated", cart });
+};
 
 module.exports = {
   getCart,
@@ -151,4 +173,5 @@ module.exports = {
   removeCartItem,
   clearCart,
   mergeGuestCart,
+  updateCartItemSize,
 };

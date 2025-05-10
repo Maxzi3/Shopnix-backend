@@ -6,6 +6,7 @@ const {
   removeCartItem,
   clearCart,
   mergeGuestCart,
+  updateCartItemSize,
 } = require("../controllers/cartControllers");
 const { setProductUserIds } = require("../controllers/reviewController");
 const { protect, restrictTo } = require("../middlewares/authMiddleware");
@@ -16,6 +17,8 @@ const router = express.Router();
 router.use(protect);
 
 router.post("/merge", mergeGuestCart);
+router.patch("/update-size/:cartItemId", protect, updateCartItemSize);
+
 
 router
   .route("/")

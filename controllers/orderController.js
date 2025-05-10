@@ -17,6 +17,7 @@ exports.createOrder = async (req, res) => {
     name: item.product.name,
     price: item.product.price,
     quantity: item.quantity,
+    size: item.size,
   }));
 
   // 3. Calculate total price

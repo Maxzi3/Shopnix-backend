@@ -6,8 +6,6 @@ const factory = require("./handlerFactory");
 const mongoose = require("mongoose");
 const { resizeImage, uploadToCloudinary } = require("../cloudinary");
 
-
-
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
   Object.keys(obj).forEach((el) => {
@@ -69,25 +67,25 @@ const createProduct = catchAsyncError(async (req, res, next) => {
       const resizedBuffer = await resizeImage(req.files.imageUrl[0].buffer);
       const uploadResult = await uploadToCloudinary(
         resizedBuffer,
-        `product-cover-${Date.now()}`,
+        `product-cover-${Date.now()}-${Math.floor(Math.random() * 10000)}}`,
         "products"
       );
       filteredBody.imageUrl = uploadResult.secure_url;
     }
 
-    // Process additional images
+    // Process additional images in parallel
     if (req.files.images && req.files.images.length > 0) {
-      const imageUrls = [];
-      for (const image of req.files.images) {
+      const imageUploadPromises = req.files.images.map(async (image) => {
         const resizedBuffer = await resizeImage(image.buffer);
         const uploadResult = await uploadToCloudinary(
           resizedBuffer,
-          `product-image-${Date.now()}`,
+          ` product-image-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
           "products"
         );
-        imageUrls.push(uploadResult.secure_url);
-      }
-      filteredBody.images = imageUrls;
+        return uploadResult.secure_url;
+      });
+
+      filteredBody.images = await Promise.all(imageUploadPromises);
     }
   }
 
@@ -119,25 +117,24 @@ const updateProduct = catchAsyncError(async (req, res, next) => {
       const resizedBuffer = await resizeImage(req.files.imageUrl[0].buffer);
       const uploadResult = await uploadToCloudinary(
         resizedBuffer,
-        `product-cover-${Date.now()}`,
+        `product-cover-${Date.now()}-${Math.floor(Math.random() * 10000)}}`,
         "products"
       );
       filteredBody.imageUrl = uploadResult.secure_url;
     }
 
-    // Process additional images
+    // Process additional images in parallel
     if (req.files.images && req.files.images.length > 0) {
-      const imageUrls = [];
-      for (const image of req.files.images) {
+      const imageUploadPromises = req.files.images.map(async (image) => {
         const resizedBuffer = await resizeImage(image.buffer);
         const uploadResult = await uploadToCloudinary(
           resizedBuffer,
-          `product-image-${Date.now()}`,
+          ` product-image-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
           "products"
         );
-        imageUrls.push(uploadResult.secure_url);
-      }
-      filteredBody.images = imageUrls;
+        return uploadResult.secure_url;
+      });
+      filteredBody.images = await Promise.all(imageUploadPromises);
     }
   }
 

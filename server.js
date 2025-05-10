@@ -29,7 +29,7 @@ mongoose
     console.error("Error connecting to MongoDB", err);
   });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;  
 
 // ✅ Save the server instance here
 const server = app.listen(port, () =>
