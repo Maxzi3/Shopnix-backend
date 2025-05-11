@@ -45,8 +45,7 @@ const signUp = catchAsyncError(async (req, res, next) => {
   const verificationToken = newUser.createEmailVerificationToken();
   await newUser.save({ validateBeforeSave: false });
 
-  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-  await new Email(newUser, verificationUrl).sendEmailVerification();
+  const verificationUrl = `${process.env.BACKEND_URL}/api/v1/users/verify-email/${verificationToken}`;
 
   res.status(201).json({
     status: "success",
@@ -176,8 +175,12 @@ const verifyEmail = catchAsyncError(async (req, res, next) => {
   if (!user) {
     return next(new AppError("Token is invalid or has expired", 400));
   }
-  if (user.emailVerified === "verified")
-    return next(new AppError("Email already verified", 400));
+
+  if (user.emailVerified === "verified") {
+    return res.redirect(
+      `${process.env.FRONTEND_URL}/login?alreadyVerified=true`
+    );
+  }
 
   user.emailVerified = "verified";
   user.emailVerificationToken = undefined;
@@ -189,11 +192,11 @@ const verifyEmail = catchAsyncError(async (req, res, next) => {
     await new Email(user, welcomeUrl).sendWelcome();
     user.welcomeEmailSent = true;
   }
-  
+
   await user.save({ validateBeforeSave: false });
 
-  // Auto Login
-  createSendToken(user, 200, res);
+  // ✅ Redirect to login page with a query flag
+  res.redirect(`${process.env.FRONTEND_URL}/login?verified=true`);
 });
 
 const resendEmailVerification = catchAsyncError(async (req, res, next) => {
@@ -205,8 +208,8 @@ const resendEmailVerification = catchAsyncError(async (req, res, next) => {
   const verificationToken = user.createEmailVerificationToken();
   await user.save({ validateBeforeSave: false });
 
-  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-  await new Email(user, verificationUrl).sendEmailVerification();
+  const verificationUrl = `${process.env.BACKEND_URL}/api/v1/users/verify-email/${verificationToken}`;
+
 
   res.status(200).json({
     status: "success",
