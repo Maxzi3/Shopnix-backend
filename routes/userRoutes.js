@@ -29,7 +29,7 @@ router.post("/signup", signUp);
 router.post("/login", login);
 router.get("/logout", logout);
 router.post("/forgotPassword", forgotPassword);
-router.get("/verifyEmail/:token", verifyEmail);
+router.get("/verify-email/:token", verifyEmail);
 router.post("/resend-verification", resendEmailVerification);
 router.patch("/resetPassword/:token", resetPassword);
 
