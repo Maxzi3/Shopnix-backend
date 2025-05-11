@@ -60,6 +60,10 @@ app.use(
 );
 
 
+app.get("/", (req, res) => {
+  res.send("Welcome to Shopnix Backend API!");
+});
+
 // Using Express router
 app.use("/api/v1/products", productRouter);
 app.use("/api/v1/users", userRouter);
