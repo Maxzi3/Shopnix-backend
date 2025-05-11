@@ -46,6 +46,7 @@ const signUp = catchAsyncError(async (req, res, next) => {
   await newUser.save({ validateBeforeSave: false });
 
   const verificationUrl = `${process.env.BACKEND_URL}/api/v1/users/verify-email/${verificationToken}`;
+  await new Email(newUser, verificationUrl).sendEmailVerification();
 
   res.status(201).json({
     status: "success",
@@ -209,7 +210,7 @@ const resendEmailVerification = catchAsyncError(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   const verificationUrl = `${process.env.BACKEND_URL}/api/v1/users/verify-email/${verificationToken}`;
-
+  await new Email(user, verificationUrl).sendEmailVerification();
 
   res.status(200).json({
     status: "success",
