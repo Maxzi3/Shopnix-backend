@@ -45,7 +45,7 @@ const signUp = catchAsyncError(async (req, res, next) => {
   const verificationToken = newUser.createEmailVerificationToken();
   await newUser.save({ validateBeforeSave: false });
 
-  const verificationUrl = `${process.env.BACKEND_URL}/api/v1/users/verify-email/${verificationToken}`;
+  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
   await new Email(newUser, verificationUrl).sendEmailVerification();
 
   res.status(201).json({
@@ -178,9 +178,11 @@ const verifyEmail = catchAsyncError(async (req, res, next) => {
   }
 
   if (user.emailVerified === "verified") {
-    return res.redirect(
-      `${process.env.FRONTEND_URL}/login?alreadyVerified=true`
-    );
+    res.status(200).json({
+      status: "success",
+      verified: true,
+      redirectTo: `${process.env.FRONTEND_URL}/login?alreadyVerified=true`,
+    });
   }
 
   user.emailVerified = "verified";
@@ -197,7 +199,11 @@ const verifyEmail = catchAsyncError(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // ✅ Redirect to login page with a query flag
-  res.redirect(`${process.env.FRONTEND_URL}/login?verified=true`);
+  res.status(200).json({
+    status: "success",
+    verified: true,
+    redirectTo: `${process.env.FRONTEND_URL}/login?verified=true`,
+  });
 });
 
 const resendEmailVerification = catchAsyncError(async (req, res, next) => {
@@ -209,7 +215,7 @@ const resendEmailVerification = catchAsyncError(async (req, res, next) => {
   const verificationToken = user.createEmailVerificationToken();
   await user.save({ validateBeforeSave: false });
 
-  const verificationUrl = `${process.env.BACKEND_URL}/api/v1/users/verify-email/${verificationToken}`;
+  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
   await new Email(user, verificationUrl).sendEmailVerification();
 
   res.status(200).json({
