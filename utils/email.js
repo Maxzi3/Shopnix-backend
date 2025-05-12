@@ -10,14 +10,14 @@ module.exports = class Email {
     this.from = `Shopnix Support <${process.env.EMAIL_FROM}>`;
   }
 
- newTransport() {
+  newTransport() {
     if (process.env.NODE_ENV === "production") {
-      // SendGrid configuration
+      // gmail configuration
       return nodemailer.createTransport({
-        service: "SendGrid",
+        service: "gmail",
         auth: {
-          user: process.env.SENDGRID_USERNAME,
-          pass: process.env.SENDGRID_API_KEY,
+          user: process.env.EMAIL_FROM,
+          pass: process.env.GMAIL_PASSWORD,
         },
       });
     }
