@@ -78,13 +78,22 @@ const login = catchAsyncError(async (req, res, next) => {
 });
 
 const logout = (req, res) => {
+  // Clear the JWT cookie
   res.clearCookie("jwt", {
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === "production", // Secure only in production
-    sameSite: "strict", // Prevent CSRF
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
   });
+
+  // Invalidate session if using sessions
+  if (req.session) {
+    req.session.destroy((err) => {
+      if (err) console.error("Session destroy error:", err);
+    });
+  }
+
   res.status(200).json({ status: "success" });
-};
+};omo
 
 const forgotPassword = catchAsyncError(async (req, res, next) => {
   // 1) Get user based on email
