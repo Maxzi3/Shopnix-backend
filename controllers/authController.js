@@ -93,7 +93,7 @@ const logout = (req, res) => {
   }
 
   res.status(200).json({ status: "success" });
-};omo
+};
 
 const forgotPassword = catchAsyncError(async (req, res, next) => {
   // 1) Get user based on email
