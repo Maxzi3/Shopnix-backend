@@ -78,20 +78,10 @@ const login = catchAsyncError(async (req, res, next) => {
 });
 
 const logout = (req, res) => {
-  // Clear the JWT cookie
-  res.clearCookie("jwt", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+  res.cookie("jwt", "loggedout", {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpsOnly: true,
   });
-
-  // Invalidate session if using sessions
-  if (req.session) {
-    req.session.destroy((err) => {
-      if (err) console.error("Session destroy error:", err);
-    });
-  }
-
   res.status(200).json({ status: "success" });
 };
 
