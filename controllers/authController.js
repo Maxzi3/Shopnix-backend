@@ -78,9 +78,10 @@ const login = catchAsyncError(async (req, res, next) => {
 });
 
 const logout = (req, res) => {
-  res.cookie("jwt", "loggedout", {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpsOnly: true,
+  res.clearCookie("jwt", {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    secure: process.env.NODE_ENV === "production",
   });
   res.status(200).json({ status: "success" });
 };
