@@ -10,24 +10,31 @@ const signToken = (id) => {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
+
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
+
+  // Cookie options for cross-subdomain compatibility (iOS-friendly)
   const cookieOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: true, // REQUIRED for SameSite=None and HTTPS
+    sameSite: "None", // REQUIRED for cross-subdomain cookies
+    domain: ".onrender.com", // Allow cookies for *.onrender.com subdomains
   };
 
+  // Send JWT as cookie
   res.cookie("jwt", token, cookieOptions);
+
+  // Remove password from response
   user.password = undefined;
 
   res.status(statusCode).json({
     status: "success",
-    token,
-    data: user,
+    token, 
+    data: { user },
   });
 };
 
