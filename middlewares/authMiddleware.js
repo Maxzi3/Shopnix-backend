@@ -51,7 +51,27 @@ const restrictTo =
     next();
   };
 
-  module.exports = {
-    protect,
-    restrictTo,
-  };
+  const isLoggedIn = catchAsyncError(async (req, res, next) => {
+    const token = req.cookies.jwt;
+    if (!token) return next();
+
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    if (!decoded) return next();
+
+    const user = await User.findById(decoded.id);
+    if (!user) return next();
+
+    if (user.changePasswordAfter(decoded.iat)) return next();
+
+    req.locals = req.locals || {};
+    req.locals.user = user;
+
+    next();
+  });
+  
+
+module.exports = {
+  protect,
+  restrictTo,
+  isLoggedIn,
+};

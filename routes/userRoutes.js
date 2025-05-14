@@ -20,7 +20,11 @@ const {
   verifyEmail,
   resendEmailVerification,
 } = require("../controllers/authController");
-const { protect, restrictTo } = require("../middlewares/authMiddleware");
+const {
+  protect,
+  restrictTo,
+  isLoggedIn,
+} = require("../middlewares/authMiddleware");
 
 //  User routes
 const router = express.Router();
@@ -32,6 +36,21 @@ router.post("/forgotPassword", forgotPassword);
 router.get("/verify-email/:token", verifyEmail);
 router.post("/resend-verification", resendEmailVerification);
 router.patch("/resetPassword/:token", resetPassword);
+router.get("/check-auth", isLoggedIn, (req, res) => {
+  if (!req.locals?.user) {
+    return res.status(200).json({ isAuthenticated: false, user: null });
+  }
+
+  res.status(200).json({
+    isAuthenticated: true,
+    user: {
+      name: req.locals.user.fullName,
+      email: req.locals.user.email,
+      avatar: req.locals.user.avatar,
+    },
+  });
+});
+
 
 // Protect all Route After this Middleware
 router.use(protect);

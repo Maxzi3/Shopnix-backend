@@ -35,12 +35,14 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // LIMIT REQUEST FROM API
-const limter = rateLimit({
-  max: 200,
-  windowMs: 60 * 60 * 1000,
-  message: "Too many Request from this IP, Please Try again in an hour",
+const limiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 100, // limit each IP to 100 requests per hour
+  message: "Too many requests from this IP, please try again in an hour",
+  standardHeaders: true, // helpful for rate limit headers
+  legacyHeaders: false,
 });
-app.use("/api", limter);
+app.use("/api", limiter);
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: "10kb" }));
