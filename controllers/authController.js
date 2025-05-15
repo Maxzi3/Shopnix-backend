@@ -23,7 +23,6 @@ const createSendToken = (user, statusCode, res) => {
     secure: true, // REQUIRED for SameSite=None and HTTPS
     sameSite: "None", // REQUIRED for cross-subdomain cookies
     path: "/", // Ensure cookie is sent for all routes
-    domain: ".onrender.com",
   };
 
   // Send JWT as cookie

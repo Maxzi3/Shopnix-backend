@@ -28,8 +28,7 @@ app.use(
   })
 );
 
-// Handle CORS preflight requests
-app.options("*", cors());
+
 
 // Set Security HTTP Headers
 app.use(helmet());
