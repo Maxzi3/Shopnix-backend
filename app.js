@@ -23,8 +23,12 @@ app.use(
   cors({
     origin: process.env.FRONTEND_URL, // or whatever your frontend is
     credentials: true, // <--- MUST BE TRUE to allow cookies
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })
 );
+
+// Handle CORS preflight requests
+app.options("*", cors());
 
 // Set Security HTTP Headers
 app.use(helmet());
