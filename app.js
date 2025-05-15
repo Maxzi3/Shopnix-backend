@@ -24,6 +24,7 @@ app.use(
     origin: process.env.FRONTEND_URL, // or whatever your frontend is
     credentials: true, // <--- MUST BE TRUE to allow cookies
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   })
 );
 
